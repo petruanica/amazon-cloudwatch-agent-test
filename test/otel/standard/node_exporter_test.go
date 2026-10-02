@@ -146,14 +146,8 @@ func TestNodeExporterNodeGroupCoverage(t *testing.T) {
 	}
 }
 
-// TestNodeExporterScrapeSelfTelemetryDropped asserts that node-exporter's
-// per-collector scrape timing and status are dropped by
-// filter/cw_k8s_ci_v0_scrape_metadata, alongside the five scrape_* names that
-// filter already handled.
-//
-// node_textfile_scrape_error is deliberately absent from this list and must keep
-// flowing: the kubernetes-mixin NodeTextFileCollectorScrapeError alerting rule
-// reads it.
+// TestNodeExporterScrapeSelfTelemetryDropped asserts node-exporter's per-collector
+// scrape self-telemetry is dropped. node_textfile_scrape_error must keep flowing.
 func TestNodeExporterScrapeSelfTelemetryDropped(t *testing.T) {
 	for _, metricName := range []string{
 		"node_scrape_collector_duration_seconds",

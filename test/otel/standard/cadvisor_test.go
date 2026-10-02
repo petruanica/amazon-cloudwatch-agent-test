@@ -187,11 +187,8 @@ func TestCadvisorNoPodSandboxMetrics(t *testing.T) {
 	}
 }
 
-// TestCadvisorNoPodScopeRollup asserts the pod-scope rollup is gone. cAdvisor
-// reports most container_* families three times per pod: once per application
-// container, once for the pod cgroup slice, and once for the pause/sandbox
-// container. The latter two both carry an empty `container` with `pod` set, and
-// filter/cw_k8s_ci_v0_cadvisor_rollup drops them.
+// TestCadvisorNoPodScopeRollup asserts the pod cgroup slice and pause/sandbox
+// duplicates are gone. Both arrive with no `container` attribute at all.
 func TestCadvisorNoPodScopeRollup(t *testing.T) {
 	for _, md := range cadvisorMetrics {
 		if strings.Contains(md.Name, "network") {
@@ -203,7 +200,7 @@ func TestCadvisorNoPodScopeRollup(t *testing.T) {
 			require.NotEmpty(t, results, "%s not available", md.Name)
 			for _, r := range results {
 				require.NotEmpty(t, r.Labels.Datapoint["container"],
-					"%s has a rollup or sandbox series (empty datapoint 'container') on pod %q",
+					"%s has a rollup or sandbox series (no datapoint 'container') on pod %q",
 					md.Name, r.Labels.Datapoint["pod"])
 				require.NotEmpty(t, r.Labels.Resource["k8s.container.name"],
 					"%s has a series with no k8s.container.name on pod %q",
@@ -213,11 +210,8 @@ func TestCadvisorNoPodScopeRollup(t *testing.T) {
 	}
 }
 
-// TestCadvisorNetworkKeepsPodScope is the other half of
-// filter/cw_k8s_ci_v0_cadvisor_rollup. The sandbox container owns the pod's
-// network namespace, so for container_network_* the pod-scope series is the only
-// series that exists rather than a duplicate. If the exemption is ever narrowed,
-// all pod network telemetry disappears.
+// TestCadvisorNetworkKeepsPodScope guards the container_network_* exemption: the
+// sandbox owns the pod netns, so those series are the only ones that exist.
 func TestCadvisorNetworkKeepsPodScope(t *testing.T) {
 	for _, md := range cadvisorMetrics {
 		if !strings.Contains(md.Name, "network") {
