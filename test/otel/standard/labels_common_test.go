@@ -674,15 +674,9 @@ func TestScrapeMetadataFiltered(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// TestDeprecatedSemconvAttributesRemoved — the Prometheus receiver injects
-// deprecated semantic-convention attributes alongside their current-spelling
-// twins. transform/cw_k8s_ci_v0_drop_deprecated_semconv removes the deprecated
-// form; the twin must survive.
-//
-// url.scheme is asserted present deliberately. Before that processor existed the
-// karpenter and keda promote transforms deleted url.scheme — the current name —
-// and kept http.scheme, the deprecated one. This catches a regression back to
-// that inversion.
+// TestDeprecatedSemconvAttributesRemoved — the deprecated semconv attributes go,
+// their current-spelling twins stay. url.scheme is asserted present on purpose:
+// karpenter/keda used to delete it and keep http.scheme, which was backwards.
 // ---------------------------------------------------------------------------
 
 func TestDeprecatedSemconvAttributesRemoved(t *testing.T) {
@@ -714,14 +708,9 @@ func TestDeprecatedSemconvAttributesRemoved(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------
-// TestRawLabelsNotBilledTwice — groupbyattrs moves each raw Prometheus label to
-// resource scope; the promote transforms rename it to its semantic convention
-// name and copy the raw name back down to the datapoint. The resource-level raw
-// copy is then deleted so the same fact is not billed at two levels.
-//
-// The datapoint copies are asserted elsewhere (TestCadvisorHasRawPromotedKeys and
-// the TestKSM_*_HasRaw*Label family), so this test only checks that the resource
-// copy is gone.
+// TestRawLabelsNotBilledTwice — the raw Prometheus labels must exist only at
+// datapoint scope, not at resource scope too. The datapoint side is covered by
+// TestCadvisorHasRawPromotedKeys and the TestKSM_*_HasRaw*Label family.
 // ---------------------------------------------------------------------------
 
 func TestRawLabelsNotBilledTwice(t *testing.T) {
